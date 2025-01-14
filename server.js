@@ -68,20 +68,14 @@ const storage = new CloudinaryStorage({
 mongoose.connect(MONGO_URI);
 
 const postSchema = new mongoose.Schema({
-  userId: String,
-  content: String,
-  createdAt: { type: Date, default: Date.now },
-});
-
-const imageSchema = new mongoose.Schema({
-  userId: String,
-  imagePath: String,
-  uploaderName: String,
-  description: String,
-  createdAt: { type: Date, default: Date.now },
-});
+    userId: String,
+    content: String,
+    type: String, // Added field to store post type
+    createdAt: { type: Date, default: Date.now },
+  });
 
 const Post = mongoose.model("Post", postSchema);
+
 const mediaSchema = new mongoose.Schema({
   userId: String,
   mediaPath: String,
@@ -157,24 +151,20 @@ app.post("/api/login", (req, res) => {
   }
 });
 
-// Example protected route
-app.get("/api/protected", (req, res) => {
-  if (req.session.user) {
-    res.json({ success: true, message: `Hello, ${req.session.user.name}` });
-  } else {
-    res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-});
 
 app.post("/posts", (req, res) => {
-  const { userId, content } = req.body;
-  const post = new Post({ userId, content });
-  post.save().then((result) => res.json(result));
-});
+    const { userId, content, type } = req.body; // Include type in the request body
+    const post = new Post({ userId, content, type }); // Save the type along with other post details
+    post.save()
+      .then((result) => res.json(result))
+      .catch((error) => res.status(500).json({ error: error.message }));
+  });
 
-app.get("/posts", (req, res) => {
-  Post.find().then((posts) => res.json(posts));
-});
+  app.get("/posts", (req, res) => {
+    Post.find()
+      .then((posts) => res.json(posts))
+      .catch((error) => res.status(500).json({ error: error.message }));
+  });
 
 app.put("/posts/:id", (req, res) => {
   const { id } = req.params;
