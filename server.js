@@ -49,17 +49,18 @@ const storage = new CloudinaryStorage({
     params: async (req, file) => {
       let folderName = 'uploads';
       let resourceType = 'image';
-  
+    
       // Check if the file is a video based on mimetype
       if (file.mimetype.startsWith('video/')) {
         resourceType = 'video';
         folderName = 'uploads';
       }
-  
+    
       return {
         folder: folderName,
         resource_type: resourceType, // 'image' or 'video'
-        allowed_formats: resourceType === 'image' ? ['jpg','jpeg', 'png'] : ['mp4', 'mov', 'avi'],
+        public_id: file.originalname, // Use the original file name as the public_id
+        allowed_formats: resourceType === 'image' ? ['jpg', 'jpeg', 'png'] : ['mp4', 'mov', 'avi'],
       };
     },
   });
@@ -68,10 +69,11 @@ const storage = new CloudinaryStorage({
 mongoose.connect(MONGO_URI);
 
 const postSchema = new mongoose.Schema({
-    userId: String,
-    content: String,
-    type: String, // Added field to store post type
-    createdAt: { type: Date, default: Date.now },
+    userId: { type: String, required: true }, // Required field
+    content: { type: String }, // Optional field (default behavior)
+    url: { type: String, required: false }, // Optional field (default behavior)
+    type: { type: String, required: true }, // Explicitly optional
+    createdAt: { type: Date, default: Date.now }, // Optional with a default value
   });
 
 const Post = mongoose.model("Post", postSchema);
