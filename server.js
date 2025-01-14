@@ -110,54 +110,53 @@ const upload = multer({ storage: storage });
 
 // Route for uploading media with descriptions
 app.post('/upload', upload.array('media'), async (req, res) => {
-    const files = req.files;
-    const { descriptions, uploaderName, userId } = req.body;
-  
-    // Ensure descriptions are an array if there's only one item
-    const descriptionsArray = Array.isArray(descriptions) ? descriptions : [descriptions];
-  
-    try {
-      const mediaItems = files.map((file, index) => ({
-        userId,
-        mediaPath: file.path, // This will contain the original name from Cloudinary
-        mediaType: file.mimetype.startsWith('image/') ? 'image' : 'video',
-        description: descriptionsArray[index] || '',
-        uploaderName,
-      }));
-  
-      const result = await Media.insertMany(mediaItems);
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-  
+  const files = req.files;
+  const { descriptions, uploaderName, userId } = req.body;
+
+  // Ensure descriptions are an array if there's only one item
+  const descriptionsArray = Array.isArray(descriptions) ? descriptions : [descriptions];
+
+  try {
+    const mediaItems = files.map((file, index) => ({
+      userId,
+      mediaPath: file.path, // This will contain the original name from Cloudinary
+      mediaType: file.mimetype.startsWith('image/') ? 'image' : 'video',
+      description: descriptionsArray[index] || '',
+      uploaderName,
+    }));
+
+    const result = await Media.insertMany(mediaItems);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.get("/media", (req, res) => {
   Media.find().then((media) => res.json(media));
 });
 
 app.post("/api/login", (req, res) => {
-  const { name, password } = req.body;
-
-  if (!name || !password) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Name and password are required" });
-  }
-
-  if (password === PASSWORD) {
-    req.session.user = { name };
-    res.json({ success: true, name });
-  } else {
-    res.status(401).json({ success: false, message: "Invalid password" });
-  }
-});
-
+    const { name, password } = req.body;
+  
+    if (!name || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Név és jelszó megadása kötelezô" });
+    }
+  
+    if (password === PASSWORD) {
+      req.session.user = { name };
+      res.json({ success: true, name });
+    } else {
+      res.status(401).json({ success: false, message: "Rossz jelszó" });
+    }
+  });
 
 app.post("/posts", (req, res) => {
-    const { userId, content, type } = req.body; // Include type in the request body
-    const post = new Post({ userId, content, type }); // Save the type along with other post details
+    const { userId, url, content, type } = req.body; // Include type in the request body
+    const post = new Post({ userId, url, content, type }); // Save the type along with other post details
     post.save()
       .then((result) => res.json(result))
       .catch((error) => res.status(500).json({ error: error.message }));
