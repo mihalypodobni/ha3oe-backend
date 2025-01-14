@@ -119,7 +119,7 @@ app.post('/upload', upload.array('media'), async (req, res) => {
     try {
       const mediaItems = files.map((file, index) => ({
         userId,
-        mediaPath: file.path,
+        mediaPath: file.path, // This will contain the original name from Cloudinary
         mediaType: file.mimetype.startsWith('image/') ? 'image' : 'video',
         description: descriptionsArray[index] || '',
         uploaderName,
@@ -131,6 +131,7 @@ app.post('/upload', upload.array('media'), async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
+  
 
 app.get("/media", (req, res) => {
   Media.find().then((media) => res.json(media));
